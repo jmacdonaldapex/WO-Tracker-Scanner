@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Work Order Location Tracker</title>
+  <title>Work Order Location Tracker / Suivi des bons de travail</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -24,9 +24,9 @@
     <!-- Header -->
     <header class="flex flex-wrap items-center justify-between gap-3 bg-[#00488f] text-white border border-[#003870] rounded-xl p-4 shadow-md">
       <div>
-        <h1 class="text-xl font-bold tracking-tight text-white">Work Order Location Tracker</h1>
+        <h1 data-i18n="appTitle" class="text-xl font-bold tracking-tight text-white">Work Order Location Tracker</h1>
         <p class="text-xs text-[#dcebfa]">
-          Local Time: <span id="liveMontrealClock" class="font-mono text-white"></span>
+          <span data-i18n="localTimeLabel">Local Time:</span> <span id="liveMontrealClock" class="font-mono text-white"></span>
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -36,11 +36,19 @@
         </span>
         <button
           type="button"
+          id="langToggleBtn"
+          onclick="toggleLanguage()"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-[#00488f] hover:bg-[#dcebfa] border border-white transition shadow-sm"
+          title="Switch Language / Changer de langue"
+        >
+          FR
+        </button>
+        <button
+          type="button"
           onclick="navigateTo('settings')"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/30 transition"
-          title="Open Settings"
         >
-          &#9881; Settings
+          &#9881; <span data-i18n="settingsBtn">Settings</span>
         </button>
       </div>
     </header>
@@ -49,16 +57,16 @@
     <div id="alertBanner" class="hidden bg-red-50 border border-red-400 text-red-900 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3 shadow-sm">
       <span id="alertMessage"></span>
       <div class="flex items-center gap-2 shrink-0">
-        <button onclick="retryUnsynced()" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold">Retry Now</button>
-        <button onclick="hideAlert()" class="px-2.5 py-1 bg-white hover:bg-red-100 text-red-900 border border-red-300 rounded-lg text-xs">Dismiss</button>
+        <button onclick="retryUnsynced()" data-i18n="retryNow" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold">Retry Now</button>
+        <button onclick="hideAlert()" data-i18n="dismiss" class="px-2.5 py-1 bg-white hover:bg-red-100 text-red-900 border border-red-300 rounded-lg text-xs">Dismiss</button>
       </div>
     </div>
 
     <!-- ==================== LANDING PAGE (DEFAULT) ==================== -->
     <section id="landingPage" class="bg-white border border-[#c6ddf5] rounded-xl p-6 space-y-5 shadow-sm">
       <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-2xl font-bold text-[#002b57]">What would you like to do?</h2>
-        <p class="text-sm text-[#3b5b7a]">Select an option below to get started.</p>
+        <h2 data-i18n="landingTitle" class="text-2xl font-bold text-[#002b57]">What would you like to do?</h2>
+        <p data-i18n="landingSubtitle" class="text-sm text-[#3b5b7a]">Select an option below to get started.</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -72,12 +80,12 @@
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#00488f] group-hover:bg-white text-white group-hover:text-[#00488f] font-bold text-sm transition">1</span>
               <span id="landingQueuedBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">0 pending</span>
             </div>
-            <h3 class="text-lg font-bold text-[#002b57] group-hover:text-white transition">Scan Work Orders</h3>
-            <p class="text-xs text-[#3b5b7a] group-hover:text-[#dcebfa] transition">
+            <h3 data-i18n="cardScanTitle" class="text-lg font-bold text-[#002b57] group-hover:text-white transition">Scan Work Orders</h3>
+            <p data-i18n="cardScanDesc" class="text-xs text-[#3b5b7a] group-hover:text-[#dcebfa] transition">
               Scan a location barcode first, then scan one or more work orders to update where they are.
             </p>
           </div>
-          <div class="text-xs font-bold text-[#00488f] group-hover:text-white transition">
+          <div data-i18n="cardScanCta" class="text-xs font-bold text-[#00488f] group-hover:text-white transition">
             Start Scanning &rarr;
           </div>
         </button>
@@ -92,13 +100,13 @@
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#00488f] group-hover:bg-white text-white group-hover:text-[#00488f] font-bold text-sm transition">2</span>
               <span id="landingAlertBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white">0</span>
             </div>
-            <h3 class="text-lg font-bold text-[#002b57] group-hover:text-white transition">Find a Work Order</h3>
-            <p class="text-xs text-[#3b5b7a] group-hover:text-[#dcebfa] transition">
-              Search where a work order is right now, see its location history, or check items sitting idle.
+            <h3 data-i18n="cardFindTitle" class="text-lg font-bold text-[#002b57] group-hover:text-white transition">Find a Work Order</h3>
+            <p data-i18n="cardFindDesc" class="text-xs text-[#3b5b7a] group-hover:text-[#dcebfa] transition">
+              Search where a work order is right now, browse work orders by location, or check idle items.
             </p>
           </div>
-          <div class="text-xs font-bold text-[#00488f] group-hover:text-white transition">
-            Search &amp; Idle List &rarr;
+          <div data-i18n="cardFindCta" class="text-xs font-bold text-[#00488f] group-hover:text-white transition">
+            Search &amp; Locations &rarr;
           </div>
         </button>
       </div>
@@ -110,19 +118,20 @@
         <button
           type="button"
           onclick="navigateTo('landing')"
+          data-i18n="homeBtn"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] rounded-lg text-xs font-bold transition"
         >
           &larr; Home
         </button>
-        <span class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Scan Work Orders</span>
+        <span data-i18n="scanPageBadge" class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Scan Work Orders</span>
       </div>
 
       <!-- Step 1 & Step 2 Cards -->
       <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div id="step1Card" class="rounded-xl p-4 border-2 border-amber-500 bg-white transition-all shadow-sm">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Step 1 &bull; Location</span>
-            <button id="changeLocBtn" onclick="resetLocation()" class="hidden text-xs bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] px-2.5 py-1 rounded-md font-semibold">
+            <span data-i18n="step1Label" class="text-xs font-bold uppercase tracking-wider text-amber-600">Step 1 &bull; Location</span>
+            <button id="changeLocBtn" onclick="resetLocation()" data-i18n="changeLocBtn" class="hidden text-xs bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] px-2.5 py-1 rounded-md font-semibold">
               Change Location
             </button>
           </div>
@@ -133,7 +142,7 @@
 
         <div id="step2Card" class="rounded-xl p-4 border-2 border-[#c6ddf5] bg-white/75 opacity-65 transition-all shadow-sm">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Step 2 &bull; Work Orders</span>
+            <span data-i18n="step2Label" class="text-xs font-bold uppercase tracking-wider text-emerald-600">Step 2 &bull; Work Orders</span>
             <span id="batchCountBadge" class="text-xs bg-[#eef5fc] text-[#00488f] border border-[#b8d8f8] px-2 py-0.5 rounded-full font-semibold">0 scanned</span>
           </div>
           <div id="step2Prompt" class="text-lg font-semibold text-[#3b5b7a]">
@@ -150,9 +159,10 @@
             type="text"
             autocomplete="off"
             placeholder="Scan barcode or type here and press Enter..."
+            data-i18n-placeholder="barcodePlaceholder"
             class="flex-1 bg-white border border-[#9ec5eb] focus:border-[#00488f] focus:outline-none rounded-lg px-4 py-3 text-base font-mono text-[#002b57] placeholder-[#7a99b8]"
           />
-          <button onclick="handleManualSubmit()" class="bg-[#00488f] hover:bg-[#003870] text-white font-semibold px-5 py-3 rounded-lg transition">
+          <button onclick="handleManualSubmit()" data-i18n="enterBtn" class="bg-[#00488f] hover:bg-[#003870] text-white font-semibold px-5 py-3 rounded-lg transition">
             Enter
           </button>
           <button id="cameraToggleBtn" onclick="toggleCamera()" class="bg-white hover:bg-[#eef5fc] text-[#00488f] border border-[#00488f] font-semibold px-4 py-3 rounded-lg transition">
@@ -162,7 +172,7 @@
 
         <div id="cameraWrapper" class="hidden space-y-2">
           <div id="reader" class="w-full max-w-md mx-auto overflow-hidden rounded-lg border border-[#9ec5eb]"></div>
-          <p class="text-xs text-center text-[#3b5b7a]">Point your camera at a barcode to scan.</p>
+          <p data-i18n="cameraHint" class="text-xs text-center text-[#3b5b7a]">Point your camera at a barcode to scan.</p>
         </div>
       </section>
 
@@ -170,14 +180,14 @@
       <section class="bg-white border border-[#c6ddf5] rounded-xl p-4 space-y-3 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 class="text-base font-bold text-[#00488f]">Recent Scans (<span id="totalCount">0</span>)</h2>
-            <p class="text-xs text-[#3b5b7a]">Scans made on this device</p>
+            <h2 class="text-base font-bold text-[#00488f]"><span data-i18n="recentScansTitle">Recent Scans</span> (<span id="totalCount">0</span>)</h2>
+            <p data-i18n="recentScansSubtitle" class="text-xs text-[#3b5b7a]">Scans made on this device</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <button id="retryBtn" onclick="retryUnsynced()" class="hidden px-3 py-1.5 bg-[#00488f] hover:bg-[#003870] text-white text-xs font-semibold rounded-lg transition">
-              Retry Pending (<span id="queuedCount">0</span>)
+              <span data-i18n="retryPending">Retry Pending</span> (<span id="queuedCount">0</span>)
             </button>
-            <button onclick="clearSyncedView()" class="px-3 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg transition">
+            <button onclick="clearSyncedView()" data-i18n="clearListBtn" class="px-3 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg transition">
               Clear List
             </button>
           </div>
@@ -187,10 +197,10 @@
           <table class="w-full text-left text-sm">
             <thead class="bg-[#00488f] text-white text-xs uppercase sticky top-0">
               <tr>
-                <th class="px-3 py-2.5">Location</th>
-                <th class="px-3 py-2.5">Work Order</th>
-                <th class="px-3 py-2.5">Time</th>
-                <th class="px-3 py-2.5">Status</th>
+                <th data-i18n="colLocation" class="px-3 py-2.5">Location</th>
+                <th data-i18n="colWorkOrder" class="px-3 py-2.5">Work Order</th>
+                <th data-i18n="colTime" class="px-3 py-2.5">Time</th>
+                <th data-i18n="colStatus" class="px-3 py-2.5">Status</th>
               </tr>
             </thead>
             <tbody id="scanTableBody" class="divide-y divide-[#dcebfa] text-xs bg-white">
@@ -207,19 +217,25 @@
         <button
           type="button"
           onclick="navigateTo('landing')"
+          data-i18n="homeBtn"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] rounded-lg text-xs font-bold transition"
         >
           &larr; Home
         </button>
-        <span class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Find a Work Order</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#3b5b7a] hidden sm:inline"><span data-i18n="updatedLabel">Updated:</span> <strong id="lastSpSyncLabel" class="text-[#002b57]">Not yet</strong></span>
+          <button onclick="fetchSharePointList(true)" data-i18n="refreshListBtn" class="px-3 py-1.5 bg-[#00488f] hover:bg-[#003870] text-white text-xs font-semibold rounded-lg transition">
+            Refresh List
+          </button>
+        </div>
       </div>
 
-      <!-- Work Order Search & History -->
+      <!-- 1. Work Order Search & History -->
       <section class="bg-white border border-[#c6ddf5] rounded-xl p-4 space-y-4 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 class="text-base font-bold text-[#00488f]">Search Work Order</h2>
-            <p class="text-xs text-[#3b5b7a]">See current location, past stops, and time spent at each spot</p>
+            <h2 data-i18n="searchWoTitle" class="text-base font-bold text-[#00488f]">Search Work Order</h2>
+            <p data-i18n="searchWoSubtitle" class="text-xs text-[#3b5b7a]">See current location, past stops, and time spent at each spot</p>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <input
@@ -227,59 +243,76 @@
               type="text"
               oninput="renderWoHistory()"
               placeholder="Enter work order number..."
+              data-i18n-placeholder="woSearchPlaceholder"
               class="flex-1 sm:w-60 bg-white border border-[#9ec5eb] focus:border-[#00488f] focus:outline-none rounded-lg px-3 py-1.5 text-sm font-bold text-[#002b57] placeholder-[#7a99b8] placeholder:font-normal placeholder:text-xs"
             />
-            <button onclick="clearLookupFilter()" class="px-2.5 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg">
+            <button onclick="clearLookupFilter()" data-i18n="clearBtn" class="px-2.5 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg">
               Clear
             </button>
           </div>
         </div>
 
-        <div id="woHistoryResults" class="space-y-3">
-          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            Type a work order number above or select any row below to view its location history.
-          </div>
-        </div>
+        <div id="woHistoryResults" class="space-y-3"></div>
       </section>
 
-      <!-- Idle Work Orders -->
+      <!-- 2. Browse by Location -->
+      <section class="bg-white border border-[#c6ddf5] rounded-xl p-4 space-y-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 data-i18n="byLocationTitle" class="text-base font-bold text-[#00488f]">Work Orders by Location</h2>
+              <span id="locationSummaryBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#eef5fc] text-[#00488f] border border-[#9ec5eb]">
+                0 locations
+              </span>
+            </div>
+            <p data-i18n="byLocationSubtitle" class="text-xs text-[#3b5b7a]">See every work order currently sitting in each location</p>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select
+              id="locationFilterSelect"
+              onchange="renderByLocation()"
+              class="flex-1 sm:w-72 bg-white border border-[#9ec5eb] focus:border-[#00488f] focus:outline-none rounded-lg px-3 py-1.5 text-xs font-bold text-[#002b57]"
+            >
+              <option value="">All Locations</option>
+            </select>
+            <button onclick="clearLocationFilter()" data-i18n="allBtn" class="px-2.5 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg">
+              All
+            </button>
+          </div>
+        </div>
+
+        <div id="locationBrowserContainer"></div>
+      </section>
+
+      <!-- 3. Idle Work Orders -->
       <section class="bg-white border border-[#c6ddf5] rounded-xl p-4 space-y-4 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-base font-bold text-[#00488f]">Idle Work Orders</h2>
+              <h2 data-i18n="idleWoTitle" class="text-base font-bold text-[#00488f]">Idle Work Orders</h2>
               <span id="staleSummaryBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300">
                 0 Overdue
               </span>
             </div>
-            <p class="text-xs text-[#3b5b7a]">
-              Sorted by longest time since last scan &bull; Updated: <span id="lastSpSyncLabel" class="text-[#002b57] font-semibold">Not yet</span>
-            </p>
+            <p data-i18n="idleWoSubtitle" class="text-xs text-[#3b5b7a]">Sorted by longest time since last scan</p>
           </div>
-          <button onclick="fetchSharePointList(true)" class="px-3 py-1.5 bg-[#00488f] hover:bg-[#003870] text-white text-xs font-semibold rounded-lg transition">
-            Refresh List
-          </button>
         </div>
 
         <!-- Legend -->
         <div class="flex flex-wrap items-center gap-3 text-xs text-[#3b5b7a] bg-[#eef5fc] px-3 py-2 rounded-lg border border-[#c6ddf5]">
-          <span class="font-semibold text-[#00488f]">Status:</span>
+          <span data-i18n="legendStatusLabel" class="font-semibold text-[#00488f]">Status:</span>
           <span class="inline-flex items-center gap-1.5 text-red-700 font-semibold">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Overdue (&ge; <span id="legendCrit">24</span>h)
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> <span data-i18n="legendOverdue">Overdue</span> (&ge; <span id="legendCrit">24</span>h)
           </span>
           <span class="inline-flex items-center gap-1.5 text-amber-700 font-semibold">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Waiting (&ge; <span id="legendWarn">4</span>h)
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> <span data-i18n="legendWaiting">Waiting</span> (&ge; <span id="legendWarn">4</span>h)
           </span>
           <span class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Recent (&lt; <span id="legendFresh">4</span>h)
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> <span data-i18n="legendRecent">Recent</span> (&lt; <span id="legendFresh">4</span>h)
           </span>
         </div>
 
-        <div id="agingListContainer">
-          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            No work order data loaded yet. Check <button type="button" onclick="navigateTo('settings')" class="underline font-bold text-[#00488f]">Settings</button> if connection is not configured.
-          </div>
-        </div>
+        <div id="agingListContainer"></div>
       </section>
     </div>
 
@@ -289,32 +322,34 @@
         <button
           type="button"
           onclick="navigateTo('landing')"
+          data-i18n="homeBtn"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] rounded-lg text-xs font-bold transition"
         >
           &larr; Home
         </button>
-        <span class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Settings</span>
+        <span data-i18n="settingsBadge" class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Settings</span>
       </div>
 
       <section class="bg-white border border-[#c6ddf5] rounded-xl p-5 space-y-5 shadow-sm">
         <div>
-          <h2 class="text-base font-bold text-[#00488f]">Connection &amp; Station Setup</h2>
-          <p class="text-xs text-[#3b5b7a]">Configure how this device sends and loads work order scans.</p>
+          <h2 data-i18n="settingsTitle" class="text-base font-bold text-[#00488f]">Connection &amp; Station Setup</h2>
+          <p data-i18n="settingsSubtitle" class="text-xs text-[#3b5b7a]">Configure how this device sends and loads work order scans.</p>
         </div>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-[#002b57] mb-1">Station Name</label>
+            <label data-i18n="stationNameLabel" class="block text-xs font-bold text-[#002b57] mb-1">Station Name</label>
             <input
               id="stationInput"
               type="text"
               placeholder="e.g. Station-1"
+              data-i18n-placeholder="stationPlaceholder"
               class="w-full sm:w-64 bg-white border border-[#9ec5eb] focus:border-[#00488f] focus:outline-none rounded-lg px-3 py-2 text-xs font-mono text-[#002b57]"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-[#002b57] mb-1">Send Scans URL (Write Connection)</label>
+            <label data-i18n="writeUrlLabel" class="block text-xs font-bold text-[#002b57] mb-1">Send Scans URL (Write Connection)</label>
             <input
               id="webhookUrlInput"
               type="url"
@@ -324,7 +359,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-[#002b57] mb-1">Load Scans URL (Read Connection)</label>
+            <label data-i18n="readUrlLabel" class="block text-xs font-bold text-[#002b57] mb-1">Load Scans URL (Read Connection)</label>
             <div class="flex flex-col sm:flex-row gap-2">
               <input
                 id="readWebhookUrlInput"
@@ -340,26 +375,26 @@
           </div>
 
           <div class="pt-2 border-t border-[#dcebfa]">
-            <h3 class="text-sm font-bold text-[#00488f] mb-2">Idle Alert Thresholds</h3>
+            <h3 data-i18n="thresholdsTitle" class="text-sm font-bold text-[#00488f] mb-2">Idle Alert Thresholds</h3>
             <div class="flex flex-wrap items-center gap-4 text-xs">
               <div class="flex items-center gap-2">
-                <label for="warnHoursInput" class="font-semibold text-[#002b57]">Waiting after (hours):</label>
+                <label for="warnHoursInput" data-i18n="waitingAfterLabel" class="font-semibold text-[#002b57]">Waiting after (hours):</label>
                 <input
                   id="warnHoursInput"
                   type="number"
                   min="1"
-                  value="72"
+                  value="4"
                   onchange="saveAgingThresholds()"
                   class="w-16 bg-white border border-[#9ec5eb] rounded-lg px-2 py-1.5 text-amber-700 font-mono font-bold text-center"
                 />
               </div>
               <div class="flex items-center gap-2">
-                <label for="critHoursInput" class="font-semibold text-[#002b57]">Overdue after (hours):</label>
+                <label for="critHoursInput" data-i18n="overdueAfterLabel" class="font-semibold text-[#002b57]">Overdue after (hours):</label>
                 <input
                   id="critHoursInput"
                   type="number"
                   min="1"
-                  value="168"
+                  value="24"
                   onchange="saveAgingThresholds()"
                   class="w-16 bg-white border border-[#9ec5eb] rounded-lg px-2 py-1.5 text-red-700 font-mono font-bold text-center"
                 />
@@ -369,17 +404,17 @@
 
           <div class="pt-3 border-t border-[#dcebfa] flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
-              <button onclick="saveWebhookConfig()" class="px-4 py-2 bg-[#00488f] hover:bg-[#003870] text-white text-xs font-bold rounded-lg transition">
+              <button onclick="saveWebhookConfig()" data-i18n="saveSettingsBtn" class="px-4 py-2 bg-[#00488f] hover:bg-[#003870] text-white text-xs font-bold rounded-lg transition">
                 Save Settings
               </button>
-              <button onclick="testWebhook()" class="px-3 py-2 bg-white hover:bg-[#eef5fc] text-[#00488f] border border-[#00488f] text-xs font-semibold rounded-lg transition">
+              <button onclick="testWebhook()" data-i18n="testConnBtn" class="px-3 py-2 bg-white hover:bg-[#eef5fc] text-[#00488f] border border-[#00488f] text-xs font-semibold rounded-lg transition">
                 Test Connection
               </button>
-              <button onclick="downloadCsvBackup()" class="px-3 py-2 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg transition">
+              <button onclick="downloadCsvBackup()" data-i18n="exportCsvBtn" class="px-3 py-2 bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] text-xs font-semibold rounded-lg transition">
                 Export CSV
               </button>
             </div>
-            <span id="settingsSavedNote" class="hidden text-xs font-bold text-emerald-700">Saved!</span>
+            <span id="settingsSavedNote" data-i18n="savedNote" class="hidden text-xs font-bold text-emerald-700">Saved!</span>
           </div>
         </div>
       </section>
@@ -391,6 +426,331 @@
     const HARDCODED_READ_WEBHOOK_URL = '';
     const MONTREAL_TZ = 'America/Toronto';
 
+    // =========================================================================
+    // TRANSLATIONS (ENGLISH / FRANÇAIS)
+    // =========================================================================
+    const TRANSLATIONS = {
+      en: {
+        appTitle: 'Work Order Location Tracker',
+        localTimeLabel: 'Local Time:',
+        settingsBtn: 'Settings',
+        connConnected: 'Connected',
+        connSetupRequired: 'Setup Required',
+        retryNow: 'Retry Now',
+        dismiss: 'Dismiss',
+        landingTitle: 'What would you like to do?',
+        landingSubtitle: 'Select an option below to get started.',
+        cardScanTitle: 'Scan Work Orders',
+        cardScanDesc: 'Scan a location barcode first, then scan one or more work orders to update where they are.',
+        cardScanCta: 'Start Scanning \u2192',
+        cardFindTitle: 'Find a Work Order',
+        cardFindDesc: 'Search where a work order is right now, browse work orders by location, or check idle items.',
+        cardFindCta: 'Search & Locations \u2192',
+        homeBtn: '\u2190 Home',
+        scanPageBadge: 'Scan Work Orders',
+        step1Label: 'Step 1 \u2022 Location',
+        changeLocBtn: 'Change Location',
+        scanLocationPrompt: 'Scan a location...',
+        step2Label: 'Step 2 \u2022 Work Orders',
+        scannedSuffix: 'scanned',
+        scanLocationFirst: 'Scan a location first',
+        readyScanWo: 'Ready \u2014 Scan work orders',
+        barcodePlaceholder: 'Scan barcode or type here and press Enter...',
+        enterBtn: 'Enter',
+        useCameraBtn: 'Use Camera',
+        stopCameraBtn: 'Stop Camera',
+        cameraHint: 'Point your camera at a barcode to scan.',
+        recentScansTitle: 'Recent Scans',
+        recentScansSubtitle: 'Scans made on this device',
+        retryPending: 'Retry Pending',
+        clearListBtn: 'Clear List',
+        colLocation: 'Location',
+        colWorkOrder: 'Work Order',
+        colTime: 'Time',
+        colStatus: 'Status',
+        noScansYet: 'No scans yet.',
+        statusSaved: 'Saved',
+        statusPending: 'Pending',
+        updatedLabel: 'Updated:',
+        notYet: 'Not yet',
+        updating: 'Updating...',
+        updateFailed: 'Update failed',
+        refreshListBtn: 'Refresh List',
+        searchWoTitle: 'Search Work Order',
+        searchWoSubtitle: 'See current location, past stops, and time spent at each spot',
+        woSearchPlaceholder: 'Enter work order number...',
+        clearBtn: 'Clear',
+        woSearchEmptyHint: 'Type a work order number above or select any work order below to view its location history.',
+        byLocationTitle: 'Work Orders by Location',
+        byLocationSubtitle: 'See every work order currently sitting in each location',
+        allLocationsOption: 'All Locations',
+        allBtn: 'All',
+        idleWoTitle: 'Idle Work Orders',
+        idleWoSubtitle: 'Sorted by longest time since last scan',
+        legendStatusLabel: 'Status:',
+        legendOverdue: 'Overdue',
+        legendWaiting: 'Waiting',
+        legendRecent: 'Recent',
+        colLastScanned: 'Last Scanned',
+        colIdleTime: 'Idle Time',
+        badgeOverdue: 'OVERDUE',
+        badgeWaiting: 'WAITING',
+        badgeRecent: 'Recent',
+        settingsBadge: 'Settings',
+        settingsTitle: 'Connection & Station Setup',
+        settingsSubtitle: 'Configure how this device sends and loads work order scans.',
+        stationNameLabel: 'Station Name',
+        stationPlaceholder: 'e.g. Station-1',
+        writeUrlLabel: 'Send Scans URL (Write Connection)',
+        readUrlLabel: 'Load Scans URL (Read Connection)',
+        thresholdsTitle: 'Idle Alert Thresholds',
+        waitingAfterLabel: 'Waiting after (hours):',
+        overdueAfterLabel: 'Overdue after (hours):',
+        saveSettingsBtn: 'Save Settings',
+        testConnBtn: 'Test Connection',
+        exportCsvBtn: 'Export CSV',
+        savedNote: 'Saved!',
+        unassigned: 'Unassigned',
+        currentLocationLabel: 'Current Location',
+        locationHistoryLabel: 'Location History',
+        colArrived: 'Arrived',
+        colMovedStatus: 'Moved / Status',
+        colDuration: 'Duration',
+        currentStatus: 'Current',
+        stopSingular: 'stop',
+        stopPlural: 'stops',
+        locationSingular: 'location',
+        locationPlural: 'locations',
+        itemSingular: 'item',
+        itemPlural: 'items',
+        woSingular: 'WO',
+        woPlural: 'WOs',
+        pendingBadge: 'pending',
+        overdueBadge: 'overdue',
+        waitingBadge: 'waiting',
+        overdueSummary: 'Overdue',
+        waitingSummary: 'Waiting',
+        noDataMsgPrefix: 'No work order data loaded yet. Open ',
+        noDataMsgLink: 'Settings',
+        noDataMsgSuffix: ' to connect your data source.',
+        noWoRecorded: 'No work orders recorded yet.',
+        noMatchFound: 'No scans found matching',
+        alertLoadFailed: 'Could not load the latest work orders. Check your connection in Settings.',
+        alertNoWriteUrl: 'Connection is not set up yet. Open Settings to add your connection URL.',
+        alertSaveFailed: 'Could not save scan to server. It is saved on this device and will retry.',
+        alertOffline: 'No connection. Scan saved on this device and will retry automatically.',
+        alertTestNoUrl: 'Enter and save a Send Scans URL first.',
+        alertCameraUnavailable: 'Camera is unavailable on this device. Use a barcode scanner or type the code.'
+      },
+      fr: {
+        appTitle: 'Suivi des emplacements des bons de travail',
+        localTimeLabel: 'Heure locale :',
+        settingsBtn: 'Param\u00e8tres',
+        connConnected: 'Connect\u00e9',
+        connSetupRequired: 'Configuration requise',
+        retryNow: 'R\u00e9essayer',
+        dismiss: 'Fermer',
+        landingTitle: 'Que souhaitez-vous faire ?',
+        landingSubtitle: 'S\u00e9lectionnez une option ci-dessous pour commencer.',
+        cardScanTitle: 'Num\u00e9riser des bons de travail',
+        cardScanDesc: 'Scannez d\u2019abord le code-barres d\u2019un emplacement, puis scannez un ou plusieurs bons de travail pour mettre \u00e0 jour leur position.',
+        cardScanCta: 'Commencer \u00e0 scanner \u2192',
+        cardFindTitle: 'Trouver un bon de travail',
+        cardFindDesc: 'Recherchez o\u00f9 se trouve un bon de travail, parcourez par emplacement ou v\u00e9rifiez les bons en attente.',
+        cardFindCta: 'Recherche et emplacements \u2192',
+        homeBtn: '\u2190 Accueil',
+        scanPageBadge: 'Num\u00e9riser des bons de travail',
+        step1Label: '\u00c9tape 1 \u2022 Emplacement',
+        changeLocBtn: 'Changer d\u2019emplacement',
+        scanLocationPrompt: 'Scanner un emplacement...',
+        step2Label: '\u00c9tape 2 \u2022 Bons de travail',
+        scannedSuffix: 'scann\u00e9(s)',
+        scanLocationFirst: 'Scannez d\u2019abord un emplacement',
+        readyScanWo: 'Pr\u00eat \u2014 Scannez les bons de travail',
+        barcodePlaceholder: 'Scannez un code-barres ou tapez ici et appuyez sur Entr\u00e9e...',
+        enterBtn: 'Entr\u00e9e',
+        useCameraBtn: 'Cam\u00e9ra',
+        stopCameraBtn: 'Arr\u00eater cam\u00e9ra',
+        cameraHint: 'Pointez votre cam\u00e9ra vers un code-barres pour scanner.',
+        recentScansTitle: 'Scans r\u00e9cents',
+        recentScansSubtitle: 'Scans effectu\u00e9s sur cet appareil',
+        retryPending: 'R\u00e9essayer en attente',
+        clearListBtn: 'Effacer la liste',
+        colLocation: 'Emplacement',
+        colWorkOrder: 'Bon de travail',
+        colTime: 'Heure',
+        colStatus: 'Statut',
+        noScansYet: 'Aucun scan pour le moment.',
+        statusSaved: 'Enregistr\u00e9',
+        statusPending: 'En attente',
+        updatedLabel: 'Mis \u00e0 jour :',
+        notYet: 'Pas encore',
+        updating: 'Mise \u00e0 jour...',
+        updateFailed: '\u00c9chec de mise \u00e0 jour',
+        refreshListBtn: 'Actualiser',
+        searchWoTitle: 'Rechercher un bon de travail',
+        searchWoSubtitle: 'Voir l\u2019emplacement actuel, l\u2019historique des arr\u00eats et le temps pass\u00e9 \u00e0 chaque endroit',
+        woSearchPlaceholder: 'Entrer un num\u00e9ro de bon de travail...',
+        clearBtn: 'Effacer',
+        woSearchEmptyHint: 'Entrez un num\u00e9ro de bon de travail ci-dessus ou cliquez sur un bon ci-dessous pour voir son historique.',
+        byLocationTitle: 'Bons de travail par emplacement',
+        byLocationSubtitle: 'Voir tous les bons de travail pr\u00e9sentement dans chaque emplacement',
+        allLocationsOption: 'Tous les emplacements',
+        allBtn: 'Tous',
+        idleWoTitle: 'Bons de travail inactifs',
+        idleWoSubtitle: 'Tri\u00e9s par dur\u00e9e depuis le dernier scan',
+        legendStatusLabel: 'Statut :',
+        legendOverdue: 'En retard',
+        legendWaiting: 'En attente',
+        legendRecent: 'R\u00e9cent',
+        colLastScanned: 'Dernier scan',
+        colIdleTime: 'Temps inactif',
+        badgeOverdue: 'EN RETARD',
+        badgeWaiting: 'EN ATTENTE',
+        badgeRecent: 'R\u00e9cent',
+        settingsBadge: 'Param\u00e8tres',
+        settingsTitle: 'Configuration de la connexion et du poste',
+        settingsSubtitle: 'Configurez l\u2019envoi et le chargement des scans de bons de travail.',
+        stationNameLabel: 'Nom du poste',
+        stationPlaceholder: 'ex. Poste-1',
+        writeUrlLabel: 'URL d\u2019envoi des scans (\u00c9criture)',
+        readUrlLabel: 'URL de chargement des scans (Lecture)',
+        thresholdsTitle: 'Seuils d\u2019alerte d\u2019inactivit\u00e9',
+        waitingAfterLabel: 'En attente apr\u00e8s (heures) :',
+        overdueAfterLabel: 'En retard apr\u00e8s (heures) :',
+        saveSettingsBtn: 'Enregistrer',
+        testConnBtn: 'Tester la connexion',
+        exportCsvBtn: 'Exporter CSV',
+        savedNote: 'Enregistr\u00e9 !',
+        unassigned: 'Non assign\u00e9',
+        currentLocationLabel: 'Emplacement actuel',
+        locationHistoryLabel: 'Historique des emplacements',
+        colArrived: 'Arriv\u00e9e',
+        colMovedStatus: 'D\u00e9plac\u00e9 / Statut',
+        colDuration: 'Dur\u00e9e',
+        currentStatus: 'Actuel',
+        stopSingular: 'arr\u00eat',
+        stopPlural: 'arr\u00eats',
+        locationSingular: 'emplacement',
+        locationPlural: 'emplacements',
+        itemSingular: 'article',
+        itemPlural: 'articles',
+        woSingular: 'BT',
+        woPlural: 'BT',
+        pendingBadge: 'en attente',
+        overdueBadge: 'en retard',
+        waitingBadge: 'en attente',
+        overdueSummary: 'En retard',
+        waitingSummary: 'En attente',
+        noDataMsgPrefix: 'Aucune donn\u00e9e charg\u00e9e. Ouvrez les ',
+        noDataMsgLink: 'Param\u00e8tres',
+        noDataMsgSuffix: ' pour connecter votre source de donn\u00e9es.',
+        noWoRecorded: 'Aucun bon de travail enregistr\u00e9.',
+        noMatchFound: 'Aucun scan trouv\u00e9 pour',
+        alertLoadFailed: 'Impossible de charger les derniers bons de travail. V\u00e9rifiez votre connexion dans les Param\u00e8tres.',
+        alertNoWriteUrl: 'La connexion n\u2019est pas encore configur\u00e9e. Ouvrez les Param\u00e8tres pour ajouter votre URL.',
+        alertSaveFailed: 'Impossible d\u2019enregistrer sur le serveur. Le scan est sauvegard\u00e9 sur cet appareil et sera r\u00e9essay\u00e9.',
+        alertOffline: 'Hors ligne. Le scan est sauvegard\u00e9 sur cet appareil et sera envoy\u00e9 automatiquement.',
+        alertTestNoUrl: 'Entrez et enregistrez d\u2019abord une URL d\u2019envoi des scans.',
+        alertCameraUnavailable: 'La cam\u00e9ra n\u2019est pas disponible sur cet appareil. Utilisez un lecteur de code-barres ou tapez le code.'
+      }
+    };
+
+    // =========================================================================
+    // BILINGUAL LOCATION DESCRIPTIONS MAP
+    // Raw location codes are still saved to SharePoint; descriptions display
+    // in the active UI language (EN / FR).
+    // =========================================================================
+    const LOCATION_DESCRIPTIONS = {
+      '1.1':  { en: 'Office (Sakthi)', fr: 'Bureau (Sakthi)' },
+      '1.2':  { en: 'Office (wall)', fr: 'Bureau (mur)' },
+      '2.1':  { en: 'Office (wall)', fr: 'Bureau (mur)' },
+      '3':    { en: 'Cutting / Sawing', fr: 'Coupe / Sciage' },
+      '4':    { en: 'Racks - Quote/Estimating and Julie', fr: 'Supports - Soumissions/Estimation et Julie' },
+      '4.2':  { en: 'Jordan', fr: 'Jordan' },
+      '5':    { en: 'Inspection (wall)', fr: 'Inspection (mur)' },
+      '6':    { en: 'Tool room (Jacques)', fr: 'Salle d\u2019outillage (Jacques)' },
+      '7.1':  { en: 'Oscar / Programmer 7', fr: 'Oscar / Programmeur 7' },
+      '8':    { en: 'Office (wall and rack across from it)', fr: 'Bureau (mur et support en face)' },
+      '8.1':  { en: 'Rack across from the office and near Jos\u00e9', fr: 'Support en face du bureau et pr\u00e8s de Jos\u00e9' },
+      '8.2':  { en: 'Bananas near your workstation', fr: 'Bananes pr\u00e8s de votre poste de travail' },
+      '8.3':  { en: "Bananas behind your workstation and near Charles's workstation", fr: 'Bananes derri\u00e8re votre poste et pr\u00e8s du poste de Charles' },
+      '9.2':  { en: 'At the CMM (Coordinate Measuring Machine)', fr: '\u00c0 la MMT (Machine \u00e0 mesurer tridimensionnelle)' },
+      '9.3':  { en: 'Rack across from inspection', fr: 'Support en face de l\u2019inspection' },
+      '9.6':  { en: 'Rack across from the tool room', fr: 'Support en face de la salle d\u2019outillage' },
+      '9.7':  { en: 'Racks next to deburring', fr: 'Supports \u00e0 c\u00f4t\u00e9 de l\u2019\u00e9bavurage' },
+      '9.8':  { en: 'Racks next to deburring', fr: 'Supports \u00e0 c\u00f4t\u00e9 de l\u2019\u00e9bavurage' },
+      '9.9':  { en: 'Racks next to deburring', fr: 'Supports \u00e0 c\u00f4t\u00e9 de l\u2019\u00e9bavurage' },
+      '9.10': { en: 'Cleaning', fr: 'Nettoyage' },
+      '9.11': { en: 'Across from the cleaning machine', fr: 'En face de la machine de nettoyage' },
+      '9.12': { en: 'Racks next to assembly and across from the tool room', fr: 'Supports \u00e0 c\u00f4t\u00e9 de l\u2019assemblage et en face de la salle d\u2019outillage' },
+      '9.16': { en: 'Rack across from the tool room', fr: 'Support en face de la salle d\u2019outillage' },
+      '10':   { en: 'Rack across from the tool room', fr: 'Support en face de la salle d\u2019outillage' },
+      '13':   { en: 'Shipping', fr: 'Exp\u00e9dition' },
+      'NCR':  { en: 'Rack across from the tool room (Non-Conformance Report)', fr: 'Support en face de la salle d\u2019outillage (Rapport de non-conformit\u00e9)' }
+    };
+
+    let currentLang = localStorage.getItem('wo_app_lang_v1') || 'en';
+    if (currentLang !== 'en' && currentLang !== 'fr') currentLang = 'en';
+
+    function t(key) {
+      return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.en[key] || key;
+    }
+
+    function getLocationDesc(code) {
+      const clean = String(code || '').trim();
+      if (!clean) return '';
+      const entry = LOCATION_DESCRIPTIONS[clean] || LOCATION_DESCRIPTIONS[clean.toUpperCase()];
+      if (!entry) return '';
+      return entry[currentLang] || entry.en || '';
+    }
+
+    function formatLocationLabel(code) {
+      const clean = String(code || '').trim();
+      if (!clean) return t('unassigned');
+      const desc = getLocationDesc(clean);
+      return desc ? `${clean} - ${desc}` : clean;
+    }
+
+    function applyTranslations() {
+      document.documentElement.lang = currentLang;
+      const toggleBtn = document.getElementById('langToggleBtn');
+      if (toggleBtn) toggleBtn.textContent = currentLang === 'en' ? 'FR' : 'EN';
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = t(key);
+      });
+
+      const camBtn = document.getElementById('cameraToggleBtn');
+      if (camBtn) {
+        camBtn.textContent = cameraActive ? t('stopCameraBtn') : t('useCameraBtn');
+      }
+
+      const syncLabel = document.getElementById('lastSpSyncLabel');
+      if (syncLabel && !lastSyncTimestamp) {
+        syncLabel.textContent = t('notYet');
+      }
+
+      updateConnectionBadge();
+      updateStepUI();
+      renderTable();
+      renderAgingWorkOrders();
+      renderByLocation();
+      renderWoHistory();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'fr' : 'en';
+      localStorage.setItem('wo_app_lang_v1', currentLang);
+      applyTranslations();
+    }
+
     let webhookUrl = HARDCODED_WRITE_WEBHOOK_URL || localStorage.getItem('sp_webhook_url_v1') || '';
     let readWebhookUrl = HARDCODED_READ_WEBHOOK_URL || localStorage.getItem('sp_read_webhook_url_v1') || '';
     let readMethod = localStorage.getItem('sp_read_method_v1') || 'POST';
@@ -398,6 +758,7 @@
     let warnHours = Number(localStorage.getItem('wo_warn_hours_v1')) || 4;
     let critHours = Number(localStorage.getItem('wo_crit_hours_v1')) || 24;
     let activePage = 'landing';
+    let lastSyncTimestamp = null;
 
     let currentLocation = null;
     let batchCount = 0;
@@ -439,7 +800,7 @@
         try { await html5QrCode.stop(); } catch (e) {}
         cameraActive = false;
         document.getElementById('cameraWrapper').classList.add('hidden');
-        document.getElementById('cameraToggleBtn').textContent = 'Use Camera';
+        document.getElementById('cameraToggleBtn').textContent = t('useCameraBtn');
       }
 
       landingPage.classList.add('hidden');
@@ -453,6 +814,7 @@
       } else if (activePage === 'lookup') {
         lookupPage.classList.remove('hidden');
         renderAgingWorkOrders();
+        renderByLocation();
         renderWoHistory();
         document.getElementById('woLookupInput').focus();
       } else if (activePage === 'settings') {
@@ -575,6 +937,7 @@
       localStorage.setItem('wo_crit_hours_v1', String(critHours));
       updateLegendLabels();
       renderAgingWorkOrders();
+      renderByLocation();
     }
 
     function updateLegendLabels() {
@@ -613,11 +976,11 @@
       if (webhookUrl || readWebhookUrl) {
         badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        text.textContent = 'Connected';
+        text.textContent = t('connConnected');
       } else {
         badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300';
         dot.className = 'w-2 h-2 rounded-full bg-amber-500';
-        text.textContent = 'Setup Required';
+        text.textContent = t('connSetupRequired');
       }
     }
 
@@ -644,6 +1007,7 @@
     async function fetchSharePointList(showFeedback = false) {
       if (!readWebhookUrl) {
         renderAgingWorkOrders();
+        renderByLocation();
         renderWoHistory();
         return;
       }
@@ -651,7 +1015,7 @@
       isFetchingSp = true;
 
       const syncLabel = document.getElementById('lastSpSyncLabel');
-      if (showFeedback) syncLabel.textContent = 'Updating...';
+      if (showFeedback) syncLabel.textContent = t('updating');
 
       try {
         const fetchOpts = readMethod === 'GET'
@@ -676,14 +1040,16 @@
           .map(normalizeSharePointItem)
           .filter(r => r.workOrder && r.workOrder !== 'TEST-WO');
 
-        syncLabel.textContent = formatMontrealTimestamp(new Date());
+        lastSyncTimestamp = formatMontrealTimestamp(new Date());
+        syncLabel.textContent = lastSyncTimestamp;
         updateConnectionBadge();
         renderAgingWorkOrders();
+        renderByLocation();
         renderWoHistory();
       } catch (err) {
-        syncLabel.textContent = 'Update failed';
+        syncLabel.textContent = t('updateFailed');
         if (showFeedback) {
-          showAlert('Could not load the latest work orders. Check your connection in Settings.');
+          showAlert(t('alertLoadFailed'));
         }
       } finally {
         isFetchingSp = false;
@@ -735,22 +1101,22 @@
       const step2Prompt = document.getElementById('step2Prompt');
       const batchBadge = document.getElementById('batchCountBadge');
 
-      batchBadge.textContent = `${batchCount} scanned`;
+      batchBadge.textContent = `${batchCount} ${t('scannedSuffix')}`;
 
       if (!currentLocation) {
         step1Card.className = 'rounded-xl p-4 border-2 border-amber-500 bg-white transition-all shadow-sm';
         step2Card.className = 'rounded-xl p-4 border-2 border-[#c6ddf5] bg-white/75 opacity-65 transition-all shadow-sm';
-        locDisplay.textContent = 'Scan a location...';
+        locDisplay.textContent = t('scanLocationPrompt');
         locDisplay.className = 'text-2xl font-mono font-bold text-[#6c8cb0] truncate';
         changeBtn.classList.add('hidden');
-        step2Prompt.textContent = 'Scan a location first';
+        step2Prompt.textContent = t('scanLocationFirst');
       } else {
         step1Card.className = 'rounded-xl p-4 border-2 border-[#c6ddf5] bg-white transition-all shadow-sm';
         step2Card.className = 'rounded-xl p-4 border-2 border-emerald-500 bg-white transition-all shadow-sm';
-        locDisplay.textContent = currentLocation;
-        locDisplay.className = 'text-2xl font-mono font-bold text-amber-600 truncate';
+        locDisplay.textContent = formatLocationLabel(currentLocation);
+        locDisplay.className = 'text-xl sm:text-2xl font-bold text-amber-600 break-words';
         changeBtn.classList.remove('hidden');
-        step2Prompt.textContent = 'Ready — Scan work orders';
+        step2Prompt.textContent = t('readyScanWo');
       }
     }
 
@@ -762,13 +1128,14 @@
     }
 
     function formatDuration(ms) {
-      if (!Number.isFinite(ms) || ms < 0) return '—';
+      if (!Number.isFinite(ms) || ms < 0) return '\u2014';
       const totalMinutes = Math.floor(ms / 60000);
       const days = Math.floor(totalMinutes / 1440);
       const hours = Math.floor((totalMinutes % 1440) / 60);
       const minutes = totalMinutes % 60;
+      const dayUnit = currentLang === 'fr' ? 'j' : 'd';
       const parts = [];
-      if (days > 0) parts.push(`${days}d`);
+      if (days > 0) parts.push(`${days}${dayUnit}`);
       if (hours > 0) parts.push(`${hours}h`);
       parts.push(`${minutes}m`);
       return parts.join(' ');
@@ -837,41 +1204,16 @@
       return [...sharepointRecords, ...pending];
     }
 
-    function renderAgingWorkOrders() {
-      const container = document.getElementById('agingListContainer');
-      const summaryBadge = document.getElementById('staleSummaryBadge');
-      const landingAlertBadge = document.getElementById('landingAlertBadge');
-
-      if (!readWebhookUrl && sharepointRecords.length === 0) {
-        summaryBadge.classList.add('hidden');
-        landingAlertBadge.classList.add('hidden');
-        container.innerHTML = `
-          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            No work order data loaded yet. Open <button type="button" onclick="navigateTo('settings')" class="underline font-bold text-[#00488f]">Settings</button> to connect your data source.
-          </div>`;
-        return;
-      }
-
+    function getLatestWorkOrderStates() {
       const sourceRecords = getAuthoritativeRecords();
-
-      if (sourceRecords.length === 0) {
-        summaryBadge.classList.add('hidden');
-        landingAlertBadge.classList.add('hidden');
-        container.innerHTML = `
-          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            No work orders recorded yet.
-          </div>`;
-        return;
-      }
-
       const latestByWo = new Map();
       sourceRecords.forEach((r) => {
         if (!r.workOrder || r.workOrder === 'TEST-WO') return;
         const existing = latestByWo.get(r.workOrder);
-        if (!existing || (Number.isFinite(r.ms) && r.ms > existing.ms)) {
+        if (!existing || (Number.isFinite(r.ms) && r.ms >= existing.ms)) {
           latestByWo.set(r.workOrder, {
             workOrder: r.workOrder,
-            location: r.location,
+            location: r.location || '',
             lastTimestamp: r.timestamp12h,
             ms: Number.isFinite(r.ms) ? r.ms : 0,
             pendingSync: Boolean(r.pendingSync)
@@ -883,15 +1225,158 @@
       const warnMs = warnHours * 3600000;
       const critMs = critHours * 3600000;
 
-      const ranked = Array.from(latestByWo.values())
-        .map(item => {
-          const idleMs = Math.max(0, nowMs - item.ms);
-          let tier = 'fresh';
-          if (idleMs >= critMs) tier = 'critical';
-          else if (idleMs >= warnMs) tier = 'warning';
-          return { ...item, idleMs, tier };
-        })
-        .sort((a, b) => b.idleMs - a.idleMs);
+      return Array.from(latestByWo.values()).map(item => {
+        const idleMs = Math.max(0, nowMs - item.ms);
+        let tier = 'fresh';
+        if (idleMs >= critMs) tier = 'critical';
+        else if (idleMs >= warnMs) tier = 'warning';
+        return { ...item, idleMs, tier };
+      });
+    }
+
+    function renderNoDataBox() {
+      return `
+        <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
+          ${escapeHtml(t('noDataMsgPrefix'))}<button type="button" onclick="navigateTo('settings')" class="underline font-bold text-[#00488f]">${escapeHtml(t('noDataMsgLink'))}</button>${escapeHtml(t('noDataMsgSuffix'))}
+        </div>`;
+    }
+
+    function clearLocationFilter() {
+      document.getElementById('locationFilterSelect').value = '';
+      renderByLocation();
+    }
+
+    function renderByLocation() {
+      const container = document.getElementById('locationBrowserContainer');
+      const badge = document.getElementById('locationSummaryBadge');
+      const selectEl = document.getElementById('locationFilterSelect');
+
+      if (!readWebhookUrl && sharepointRecords.length === 0 && localOutboxRecords.length === 0) {
+        badge.classList.add('hidden');
+        selectEl.innerHTML = `<option value="">${escapeHtml(t('allLocationsOption'))}</option>`;
+        container.innerHTML = renderNoDataBox();
+        return;
+      }
+
+      const states = getLatestWorkOrderStates();
+      if (states.length === 0) {
+        badge.classList.add('hidden');
+        selectEl.innerHTML = `<option value="">${escapeHtml(t('allLocationsOption'))}</option>`;
+        container.innerHTML = `
+          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
+            ${escapeHtml(t('noWoRecorded'))}
+          </div>`;
+        return;
+      }
+
+      const byLocation = new Map();
+      states.forEach(item => {
+        const loc = item.location || '';
+        if (!byLocation.has(loc)) byLocation.set(loc, []);
+        byLocation.get(loc).push(item);
+      });
+
+      const sortedLocations = Array.from(byLocation.keys()).sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+      );
+
+      sortedLocations.forEach(loc => {
+        byLocation.get(loc).sort((a, b) => b.idleMs - a.idleMs);
+      });
+
+      const previousSelection = selectEl.value;
+      selectEl.innerHTML = `<option value="">${escapeHtml(t('allLocationsOption'))} (${sortedLocations.length})</option>` +
+        sortedLocations.map(loc => {
+          const count = byLocation.get(loc).length;
+          const unit = count === 1 ? t('itemSingular') : t('itemPlural');
+          return `<option value="${escapeHtml(loc)}">${escapeHtml(formatLocationLabel(loc))} (${count} ${escapeHtml(unit)})</option>`;
+        }).join('');
+
+      if (previousSelection && byLocation.has(previousSelection)) {
+        selectEl.value = previousSelection;
+      }
+
+      const selectedLoc = selectEl.value;
+      const locationsToShow = selectedLoc ? [selectedLoc] : sortedLocations;
+
+      const locWord = sortedLocations.length === 1 ? t('locationSingular') : t('locationPlural');
+      badge.classList.remove('hidden');
+      badge.textContent = `${sortedLocations.length} ${locWord} \u2022 ${states.length} ${t('woPlural')}`;
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+          ${locationsToShow.map(loc => {
+            const items = byLocation.get(loc);
+            const woUnit = items.length === 1 ? t('woSingular') : t('woPlural');
+            return `
+              <div class="border border-[#c6ddf5] rounded-xl overflow-hidden bg-white flex flex-col">
+                <div class="bg-[#00488f] text-white px-3.5 py-2 flex items-center justify-between gap-2">
+                  <span class="font-bold text-sm tracking-wide leading-snug">${escapeHtml(formatLocationLabel(loc))}</span>
+                  <span class="text-xs font-bold bg-white text-[#00488f] px-2 py-0.5 rounded-full shrink-0">
+                    ${items.length} ${escapeHtml(woUnit)}
+                  </span>
+                </div>
+                <div class="divide-y divide-[#dcebfa]">
+                  ${items.map(item => {
+                    let dotColor = 'bg-emerald-500';
+                    let timeStyle = 'text-emerald-700 font-semibold';
+                    if (item.tier === 'critical') {
+                      dotColor = 'bg-red-500';
+                      timeStyle = 'text-red-700 font-extrabold';
+                    } else if (item.tier === 'warning') {
+                      dotColor = 'bg-amber-500';
+                      timeStyle = 'text-amber-700 font-bold';
+                    }
+                    return `
+                      <div
+                        onclick="inspectWorkOrder('${escapeHtml(item.workOrder)}')"
+                        class="px-3.5 py-2 flex items-center justify-between gap-2 hover:bg-[#eef5fc] cursor-pointer transition text-xs"
+                      >
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="w-2 h-2 rounded-full shrink-0 ${dotColor}"></span>
+                          <span class="font-bold text-sm text-[#002b57] underline decoration-[#00488f]/50 truncate">${escapeHtml(item.workOrder)}</span>
+                        </div>
+                        <span class="shrink-0 ${timeStyle}">${escapeHtml(formatDuration(item.idleMs))}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function inspectWorkOrder(wo) {
+      document.getElementById('woLookupInput').value = wo;
+      renderWoHistory();
+      document.getElementById('woHistoryResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderAgingWorkOrders() {
+      const container = document.getElementById('agingListContainer');
+      const summaryBadge = document.getElementById('staleSummaryBadge');
+      const landingAlertBadge = document.getElementById('landingAlertBadge');
+
+      if (!readWebhookUrl && sharepointRecords.length === 0 && localOutboxRecords.length === 0) {
+        summaryBadge.classList.add('hidden');
+        landingAlertBadge.classList.add('hidden');
+        container.innerHTML = renderNoDataBox();
+        return;
+      }
+
+      const ranked = getLatestWorkOrderStates().sort((a, b) => b.idleMs - a.idleMs);
+
+      if (ranked.length === 0) {
+        summaryBadge.classList.add('hidden');
+        landingAlertBadge.classList.add('hidden');
+        container.innerHTML = `
+          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
+            ${escapeHtml(t('noWoRecorded'))}
+          </div>`;
+        return;
+      }
 
       const criticalCount = ranked.filter(r => r.tier === 'critical').length;
       const warningCount = ranked.filter(r => r.tier === 'warning').length;
@@ -901,13 +1386,15 @@
         summaryBadge.className = criticalCount > 0
           ? 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300'
           : 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300';
-        summaryBadge.textContent = `${criticalCount} Overdue • ${warningCount} Waiting`;
+        summaryBadge.textContent = `${criticalCount} ${t('overdueSummary')} \u2022 ${warningCount} ${t('waitingSummary')}`;
 
         landingAlertBadge.classList.remove('hidden');
         landingAlertBadge.className = criticalCount > 0
           ? 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white'
           : 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900 border border-amber-400';
-        landingAlertBadge.textContent = criticalCount > 0 ? `${criticalCount} overdue` : `${warningCount} waiting`;
+        landingAlertBadge.textContent = criticalCount > 0
+          ? `${criticalCount} ${t('overdueBadge')}`
+          : `${warningCount} ${t('waitingBadge')}`;
       } else {
         summaryBadge.classList.add('hidden');
         landingAlertBadge.classList.add('hidden');
@@ -918,34 +1405,34 @@
           <table class="w-full text-left text-xs bg-white">
             <thead class="bg-[#00488f] text-white uppercase sticky top-0">
               <tr>
-                <th class="px-3 py-2.5">Status</th>
-                <th class="px-3 py-2.5">Work Order</th>
-                <th class="px-3 py-2.5">Location</th>
-                <th class="px-3 py-2.5">Last Scanned</th>
-                <th class="px-3 py-2.5">Idle Time</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('colStatus'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('colWorkOrder'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('colLocation'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('colLastScanned'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('colIdleTime'))}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#dcebfa]">
               ${ranked.map((item) => {
                 let rowStyle = 'hover:bg-[#eef5fc]';
-                let badgeHtml = '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold">Recent</span>';
+                let badgeHtml = `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold">${escapeHtml(t('badgeRecent'))}</span>`;
                 let timeStyle = 'text-emerald-700 font-semibold';
 
                 if (item.tier === 'critical') {
                   rowStyle = 'bg-red-50 border-l-4 border-l-red-500 hover:bg-red-100/70';
-                  badgeHtml = '<span class="px-2 py-0.5 rounded bg-red-600 text-white font-bold">OVERDUE</span>';
+                  badgeHtml = `<span class="px-2 py-0.5 rounded bg-red-600 text-white font-bold">${escapeHtml(t('badgeOverdue'))}</span>`;
                   timeStyle = 'text-red-700 font-extrabold text-sm';
                 } else if (item.tier === 'warning') {
                   rowStyle = 'bg-amber-50 border-l-4 border-l-amber-400 hover:bg-amber-100/70';
-                  badgeHtml = '<span class="px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-400 font-bold">WAITING</span>';
+                  badgeHtml = `<span class="px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-400 font-bold">${escapeHtml(t('badgeWaiting'))}</span>`;
                   timeStyle = 'text-amber-700 font-bold';
                 }
 
                 return `
-                  <tr onclick="selectWoFromTable('${escapeHtml(item.workOrder)}')" class="cursor-pointer transition ${rowStyle}">
+                  <tr onclick="inspectWorkOrder('${escapeHtml(item.workOrder)}')" class="cursor-pointer transition ${rowStyle}">
                     <td class="px-3 py-2.5">${badgeHtml}</td>
                     <td class="px-3 py-2.5 text-base font-bold text-[#002b57] tracking-wide underline decoration-[#00488f]/50">${escapeHtml(item.workOrder)}</td>
-                    <td class="px-3 py-2.5 text-[#00488f] font-bold">${escapeHtml(item.location)}</td>
+                    <td class="px-3 py-2.5 text-[#00488f] font-bold">${escapeHtml(formatLocationLabel(item.location))}</td>
                     <td class="px-3 py-2.5 text-[#2b4c6f]">${escapeHtml(item.lastTimestamp)}</td>
                     <td class="px-3 py-2.5 ${timeStyle}">${escapeHtml(formatDuration(item.idleMs))}</td>
                   </tr>
@@ -966,18 +1453,15 @@
       const container = document.getElementById('woHistoryResults');
       const query = document.getElementById('woLookupInput').value.trim().toLowerCase();
 
-      if (!readWebhookUrl && sharepointRecords.length === 0) {
-        container.innerHTML = `
-          <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            No work order data loaded yet. Open <button type="button" onclick="navigateTo('settings')" class="underline font-bold text-[#00488f]">Settings</button> to connect your data source.
-          </div>`;
+      if (!readWebhookUrl && sharepointRecords.length === 0 && localOutboxRecords.length === 0) {
+        container.innerHTML = renderNoDataBox();
         return;
       }
 
       if (!query) {
         container.innerHTML = `
           <div class="text-xs text-[#3b5b7a] bg-[#eef5fc] border border-[#c6ddf5] rounded-lg p-4 text-center">
-            Type a work order number above or select any row below to view its location history.
+            ${escapeHtml(t('woSearchEmptyHint'))}
           </div>`;
         return;
       }
@@ -992,7 +1476,7 @@
       if (matchingWos.length === 0) {
         container.innerHTML = `
           <div class="text-xs text-[#00488f] bg-[#eef5fc] border border-[#9ec5eb] rounded-lg p-3">
-            No scans found matching "<strong>${escapeHtml(query)}</strong>".
+            ${escapeHtml(t('noMatchFound'))} "<strong>${escapeHtml(query)}</strong>".
           </div>`;
         return;
       }
@@ -1014,47 +1498,48 @@
           stopNumber: i + 1,
           location: scan.location,
           arrivedAt: scan.timestamp12h,
-          departedOrNow: nextScan ? nextScan.timestamp12h : 'Current',
+          departedOrNow: nextScan ? nextScan.timestamp12h : t('currentStatus'),
           durationText: formatDuration(durationMs),
           isCurrent
         };
       });
 
       const currentStop = stops[stops.length - 1];
+      const stopWord = stops.length === 1 ? t('stopSingular') : t('stopPlural');
 
       container.innerHTML = `
         <div class="bg-[#eef5fc] border border-[#9ec5eb] rounded-xl p-3.5 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#c6ddf5] pb-2.5">
             <div>
-              <span class="text-xs uppercase tracking-wider text-[#00488f] font-bold">Work Order</span>
+              <span class="text-xs uppercase tracking-wider text-[#00488f] font-bold">${escapeHtml(t('colWorkOrder'))}</span>
               <h3 class="text-2xl font-bold text-[#002b57] tracking-wide">${escapeHtml(targetWo)}</h3>
             </div>
             <div class="text-right">
-              <span class="text-xs text-[#3b5b7a] block">Current Location</span>
+              <span class="text-xs text-[#3b5b7a] block">${escapeHtml(t('currentLocationLabel'))}</span>
               <span class="text-sm font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-300 inline-block">
-                ${escapeHtml(currentStop.location)} &bull; ${escapeHtml(currentStop.durationText)}
+                ${escapeHtml(formatLocationLabel(currentStop.location))} &bull; ${escapeHtml(currentStop.durationText)}
               </span>
             </div>
           </div>
 
           <div>
             <div class="text-xs font-semibold uppercase tracking-wider text-[#3b5b7a] mb-2">
-              Location History (${stops.length} ${stops.length === 1 ? 'stop' : 'stops'})
+              ${escapeHtml(t('locationHistoryLabel'))} (${stops.length} ${escapeHtml(stopWord)})
             </div>
             <div class="overflow-x-auto rounded-lg border border-[#c6ddf5] bg-white">
               <table class="w-full text-left text-xs">
                 <thead class="bg-[#00488f] text-white uppercase">
                   <tr>
-                    <th class="px-3 py-2">Location</th>
-                    <th class="px-3 py-2">Arrived</th>
-                    <th class="px-3 py-2">Moved / Status</th>
-                    <th class="px-3 py-2">Duration</th>
+                    <th class="px-3 py-2">${escapeHtml(t('colLocation'))}</th>
+                    <th class="px-3 py-2">${escapeHtml(t('colArrived'))}</th>
+                    <th class="px-3 py-2">${escapeHtml(t('colMovedStatus'))}</th>
+                    <th class="px-3 py-2">${escapeHtml(t('colDuration'))}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#dcebfa]">
                   ${[...stops].reverse().map(s => `
                     <tr class="${s.isCurrent ? 'bg-emerald-50/80' : 'hover:bg-[#eef5fc]'}">
-                      <td class="px-3 py-2 font-bold ${s.isCurrent ? 'text-emerald-700' : 'text-[#00488f]'}">${escapeHtml(s.location)}</td>
+                      <td class="px-3 py-2 font-bold ${s.isCurrent ? 'text-emerald-700' : 'text-[#00488f]'}">${escapeHtml(formatLocationLabel(s.location))}</td>
                       <td class="px-3 py-2 text-[#2b4c6f]">${escapeHtml(s.arrivedAt)}</td>
                       <td class="px-3 py-2 text-[#5c7d9e]">${escapeHtml(s.departedOrNow)}</td>
                       <td class="px-3 py-2 font-bold text-[#002b57]">${escapeHtml(s.durationText)}</td>
@@ -1070,7 +1555,7 @@
 
     async function sendToSharePoint(record) {
       if (!webhookUrl) {
-        showAlert('Connection is not set up yet. Open Settings to add your connection URL.');
+        showAlert(t('alertNoWriteUrl'));
         return;
       }
       try {
@@ -1098,13 +1583,13 @@
           hideAlert();
         } else {
           record.errorMsg = `HTTP ${res.status}`;
-          showAlert('Could not save scan to server. It is saved on this device and will retry.');
+          showAlert(t('alertSaveFailed'));
           playTone('error');
           flashScreen('flash-red');
         }
       } catch (err) {
         record.errorMsg = 'Offline';
-        showAlert('No connection. Scan saved on this device and will retry automatically.');
+        showAlert(t('alertOffline'));
       }
       saveLocal();
       renderTable();
@@ -1112,7 +1597,7 @@
 
     async function testWebhook() {
       if (!webhookUrl) {
-        showAlert('Enter and save a Send Scans URL first.');
+        showAlert(t('alertTestNoUrl'));
         return;
       }
       const nowDate = new Date();
@@ -1158,26 +1643,26 @@
       if (unsyncedCount > 0) {
         retryBtn.classList.remove('hidden');
         landingQueuedBadge.classList.remove('hidden');
-        landingQueuedBadge.textContent = `${unsyncedCount} pending`;
+        landingQueuedBadge.textContent = `${unsyncedCount} ${t('pendingBadge')}`;
       } else {
         retryBtn.classList.add('hidden');
         landingQueuedBadge.classList.add('hidden');
       }
 
       if (localOutboxRecords.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="px-3 py-6 text-center text-[#5c7d9e]">No scans yet.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="4" class="px-3 py-6 text-center text-[#5c7d9e]">${escapeHtml(t('noScansYet'))}</td></tr>`;
         return;
       }
 
       tbody.innerHTML = localOutboxRecords.map(r => `
         <tr class="hover:bg-[#eef5fc]">
-          <td class="px-3 py-2 text-[#00488f] font-bold">${escapeHtml(r.location)}</td>
+          <td class="px-3 py-2 text-[#00488f] font-bold">${escapeHtml(formatLocationLabel(r.location))}</td>
           <td class="px-3 py-2 text-base font-bold text-[#002b57] tracking-wide cursor-pointer underline decoration-[#00488f]/50" onclick="selectWoFromTable('${escapeHtml(r.workOrder)}')">${escapeHtml(r.workOrder)}</td>
           <td class="px-3 py-2 text-[#2b4c6f]">${escapeHtml(displayMontreal12h(r.isoUtc || r.timestamp))}</td>
           <td class="px-3 py-2">
             ${r.synced
-              ? `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold">Saved</span>`
-              : `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-semibold">Pending</span>`
+              ? `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold">${escapeHtml(t('statusSaved'))}</span>`
+              : `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-semibold">${escapeHtml(t('statusPending'))}</span>`
             }
           </td>
         </tr>
@@ -1213,10 +1698,14 @@
     function downloadCsvBackup() {
       const exportRows = sharepointRecords.length > 0 ? sharepointRecords : localOutboxRecords;
       if (exportRows.length === 0) return;
-      const header = 'Location,WorkOrder,Timestamp,Station\n';
-      const body = [...exportRows].map(r =>
-        `"${r.location || ''}","${r.workOrder || ''}","${r.timestamp12h || displayMontreal12h(r.isoUtc || r.timestamp)}","${r.station || ''}"`
-      ).join('\n');
+      const header = 'Location,LocationDescription_EN,LocationDescription_FR,WorkOrder,Timestamp,Station\n';
+      const body = [...exportRows].map(r => {
+        const locCode = r.location || '';
+        const entry = LOCATION_DESCRIPTIONS[locCode] || LOCATION_DESCRIPTIONS[locCode.toUpperCase()] || {};
+        const descEn = entry.en || '';
+        const descFr = entry.fr || '';
+        return `"${locCode}","${descEn}","${descFr}","${r.workOrder || ''}","${r.timestamp12h || displayMontreal12h(r.isoUtc || r.timestamp)}","${r.station || ''}"`;
+      }).join('\n');
       const blob = new Blob([header + body], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1234,12 +1723,12 @@
         await html5QrCode.stop();
         cameraActive = false;
         wrapper.classList.add('hidden');
-        btn.textContent = 'Use Camera';
+        btn.textContent = t('useCameraBtn');
         return;
       }
 
       wrapper.classList.remove('hidden');
-      btn.textContent = 'Stop Camera';
+      btn.textContent = t('stopCameraBtn');
       html5QrCode = new Html5Qrcode('reader');
       try {
         await html5QrCode.start(
@@ -1249,18 +1738,14 @@
         );
         cameraActive = true;
       } catch (err) {
-        showAlert('Camera is unavailable on this device. Use a barcode scanner or type the code.');
+        showAlert(t('alertCameraUnavailable'));
         wrapper.classList.add('hidden');
-        btn.textContent = 'Use Camera';
+        btn.textContent = t('useCameraBtn');
       }
     }
 
     updateMontrealClock();
-    updateConnectionBadge();
-    updateStepUI();
-    renderTable();
-    renderAgingWorkOrders();
-    renderWoHistory();
+    applyTranslations();
     navigateTo('landing');
     if (readWebhookUrl) {
       fetchSharePointList(true);
@@ -1268,7 +1753,10 @@
     setInterval(updateMontrealClock, 1000);
     setInterval(() => {
       if (readWebhookUrl) fetchSharePointList(false);
-      else renderAgingWorkOrders();
+      else {
+        renderAgingWorkOrders();
+        renderByLocation();
+      }
     }, 60000);
   </script>
 </body>
