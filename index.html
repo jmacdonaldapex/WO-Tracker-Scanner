@@ -540,7 +540,9 @@
         alertSaveFailed: 'Could not save scan to server. It is saved on this device and will retry.',
         alertOffline: 'No connection. Scan saved on this device and will retry automatically.',
         alertTestNoUrl: 'Enter and save a Send Scans URL first.',
-        alertCameraUnavailable: 'Camera is unavailable on this device. Use a barcode scanner or type the code.'
+        alertCameraUnavailable: 'Camera is unavailable on this device. Use a barcode scanner or type the code.',
+        alertInvalidLocation: 'Invalid location code. Must be 1–2 digits (with up to 2 decimals, e.g. 3 or 9.12) or NCR.',
+        alertInvalidWorkOrder: 'Work order must be at least 5 characters/digits long (ignoring accidental location re-scan).'
       },
       fr: {
         appTitle: 'Suivi des emplacements des bons de travail',
@@ -652,7 +654,9 @@
         alertSaveFailed: 'Impossible d\u2019enregistrer sur le serveur. Le scan est sauvegard\u00e9 sur cet appareil et sera r\u00e9essay\u00e9.',
         alertOffline: 'Hors ligne. Le scan est sauvegard\u00e9 sur cet appareil et sera envoy\u00e9 automatiquement.',
         alertTestNoUrl: 'Entrez et enregistrez d\u2019abord une URL d\u2019envoi des scans.',
-        alertCameraUnavailable: 'La cam\u00e9ra n\u2019est pas disponible sur cet appareil. Utilisez un lecteur de code-barres ou tapez le code.'
+        alertCameraUnavailable: 'La cam\u00e9ra n\u2019est pas disponible sur cet appareil. Utilisez un lecteur de code-barres ou tapez le code.',
+        alertInvalidLocation: 'Code d\u2019emplacement invalide. Doit contenir 1 \u00e0 2 chiffres (avec jusqu\u2019\u00e0 2 d\u00e9cimales, ex. 3 ou 9.12) ou NCR.',
+        alertInvalidWorkOrder: 'Le bon de travail doit contenir au moins 5 caract\u00e8res/chiffres (re-scan d\u2019emplacement ignor\u00e9).'
       }
     };
 
@@ -1141,20 +1145,65 @@
       return parts.join(' ');
     }
 
-    async function processScan(code) {
+    function isValidLocationCode(code) {
+      const clean = String(code || '').trim();
+      if (/^NCR$/i.test(clean) || /^TEST-LOC$/i.test(clean)) return true;
+      // Up to 2 digits, optionally followed by a decimal point and 1 to 2 digits (e.g., 3, 13, 4.2, 9.12)
+      return /^\d{1,2}(\.\d{1,2})?$/.test(clean);
+    }
+
+    function isValidWorkOrderCode(code) {
+      const clean = String(code || '').trim();
+      if (/^TEST-WO$/i.test(clean)) return true;
+      // Must be at least 5 characters/digits long (prevents 1-2 digit + 2 decimal location barcodes from scanning as WOs)
+      return clean.length >= 5;
+    }
+
+    async function processScan(code, source = 'manual') {
+      const cleanCode = String(code || '').trim();
+      if (!cleanCode) return;
+
       const now = Date.now();
-      if (code === lastScanCode && now - lastScanTime < 1200) return;
-      lastScanCode = code;
-      lastScanTime = now;
+      // Ignore rapid duplicate reads of the exact same code (extended window for camera)
+      const dupWindow = source === 'camera' ? 2500 : 1200;
+      if (cleanCode === lastScanCode && now - lastScanTime < dupWindow) return;
 
       if (!currentLocation) {
-        currentLocation = code;
+        if (!isValidLocationCode(cleanCode)) {
+          lastScanCode = cleanCode;
+          lastScanTime = now;
+          playTone('error');
+          flashScreen('flash-red');
+          showAlert(t('alertInvalidLocation'));
+          return;
+        }
+        hideAlert();
+        lastScanCode = cleanCode;
+        lastScanTime = now;
+        currentLocation = /^NCR$/i.test(cleanCode) ? 'NCR' : cleanCode;
         batchCount = 0;
         playTone('location');
         flashScreen('flash-amber');
         updateStepUI();
         return;
       }
+
+      // Step 2: Expecting a Work Order (>= 5 characters/digits)
+      if (!isValidWorkOrderCode(cleanCode)) {
+        // Silently ignore if camera immediately re-reads the active location barcode
+        if (cleanCode.toUpperCase() === currentLocation.toUpperCase()) return;
+        lastScanCode = cleanCode;
+        lastScanTime = now;
+        playTone('error');
+        flashScreen('flash-red');
+        showAlert(t('alertInvalidWorkOrder'));
+        return;
+      }
+
+      hideAlert();
+      lastScanCode = cleanCode;
+      lastScanTime = now;
+      code = cleanCode;
 
       const nowDate = new Date();
       const timestamp = formatMontrealTimestamp(nowDate);
@@ -1734,7 +1783,7 @@
         await html5QrCode.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 150 } },
-          (decodedText) => processScan(decodedText)
+          (decodedText) => processScan(decodedText, 'camera')
         );
         cameraActive = true;
       } catch (err) {
