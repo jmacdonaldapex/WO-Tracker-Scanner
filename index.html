@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Work Order Location Tracker / Suivi des bons de travail</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./apexlogo128.ico" />
+  <link rel="apple-touch-icon" sizes="128x128" href="./apexlogo128.ico" />
+  <link rel="apple-touch-icon" sizes="512x512" href="./apexlogo512.ico" />
+  <meta name="theme-color" content="#00488f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="WO Tracker" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -16,6 +25,11 @@
     .flash-green { animation: flashGreen 0.45s ease-out; }
     .flash-amber { animation: flashAmber 0.45s ease-out; }
     .flash-red   { animation: flashRed 0.45s ease-out; }
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
   </style>
 </head>
 <body id="appBody" class="bg-[#eef5fc] text-[#002b57] min-h-screen">
@@ -170,11 +184,46 @@
           </button>
         </div>
 
-        <div id="cameraWrapper" class="hidden space-y-2">
-          <div id="reader" class="w-full max-w-md mx-auto overflow-hidden rounded-lg border border-[#9ec5eb]"></div>
-          <p data-i18n="cameraHint" class="text-xs text-center text-[#3b5b7a]">Point your camera at a barcode to scan.</p>
-        </div>
       </section>
+
+      <!-- Full-Screen Camera Scanner Overlay -->
+      <div id="cameraOverlay" class="hidden fixed inset-0 z-50 bg-black flex flex-col justify-between">
+        <!-- Top Bar -->
+        <div class="relative z-10 bg-gradient-to-b from-black/85 via-black/60 to-transparent p-4 flex items-center justify-between gap-3 text-white">
+          <div class="min-w-0">
+            <div id="camOverlayStepLabel" class="text-xs font-bold uppercase tracking-wider text-amber-400">Step 1 &bull; Scan Location</div>
+            <div id="camOverlayLocText" class="text-base font-bold truncate text-white">Scan a location...</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              id="camChangeLocBtn"
+              onclick="resetLocation()"
+              data-i18n="changeLocBtn"
+              class="hidden px-3 py-2 rounded-lg text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/30"
+            >
+              Change Location
+            </button>
+            <button
+              type="button"
+              onclick="stopCamera()"
+              data-i18n="closeCameraBtn"
+              class="px-3.5 py-2 rounded-lg text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <!-- Camera Feed -->
+        <div id="reader" class="fixed inset-0 w-full h-full z-0"></div>
+
+        <!-- Bottom Status / Hint -->
+        <div class="relative z-10 bg-gradient-to-t from-black/85 via-black/60 to-transparent p-4 text-center text-white space-y-1">
+          <div id="camBatchPill" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-600/90 text-white">0 scanned</div>
+          <p data-i18n="cameraHint" class="text-xs text-white/85">Point your camera at a barcode to scan.</p>
+        </div>
+      </div>
 
       <!-- Recent Scans on This Device -->
       <section class="bg-white border border-[#c6ddf5] rounded-xl p-4 space-y-3 shadow-sm">
@@ -419,6 +468,40 @@
         </div>
       </section>
     </div>
+    <!-- Work Order Manual Confirmation Modal (works in full-screen camera and manual mode) -->
+    <div id="woConfirmModal" class="hidden fixed inset-0 z-[60] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white border-2 border-[#00488f] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-[#002b57]">
+        <div class="space-y-1 text-center">
+          <span data-i18n="confirmScanTitle" class="text-xs font-bold uppercase tracking-wider text-[#00488f]">Confirm Work Order Scan</span>
+          <div id="confirmWoCode" class="text-3xl font-mono font-extrabold text-[#002b57] tracking-wide py-2 px-3 bg-[#eef5fc] border border-[#9ec5eb] rounded-xl break-all">
+            ---
+          </div>
+        </div>
+        <div class="bg-[#eef5fc] rounded-lg px-3 py-2 text-xs flex items-center justify-between gap-2 border border-[#c6ddf5]">
+          <span data-i18n="colLocation" class="font-semibold text-[#3b5b7a]">Location</span>
+          <span id="confirmWoLoc" class="font-bold text-[#00488f] text-right">---</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button
+            type="button"
+            onclick="cancelPendingWoScan()"
+            data-i18n="cancelScanBtn"
+            class="py-3 px-4 rounded-xl text-sm font-bold bg-[#eef5fc] hover:bg-[#dcebfa] text-[#00488f] border border-[#9ec5eb] transition"
+          >
+            Cancel / Rescan
+          </button>
+          <button
+            type="button"
+            id="confirmScanSaveBtn"
+            onclick="confirmPendingWoScan()"
+            data-i18n="confirmSaveBtn"
+            class="py-3 px-4 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow transition"
+          >
+            Confirm &amp; Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -542,7 +625,11 @@
         alertTestNoUrl: 'Enter and save a Send Scans URL first.',
         alertCameraUnavailable: 'Camera is unavailable on this device. Use a barcode scanner or type the code.',
         alertInvalidLocation: 'Invalid location code. Must be 1–2 digits (with up to 2 decimals, e.g. 3 or 9.12) or NCR.',
-        alertInvalidWorkOrder: 'Work order must be at least 5 characters/digits long (ignoring accidental location re-scan).'
+        alertInvalidWorkOrder: 'Work order must be at least 5 characters/digits long (ignoring accidental location re-scan).',
+        closeCameraBtn: 'Done / Close',
+        confirmScanTitle: 'Confirm Work Order Scan',
+        confirmSaveBtn: 'Confirm & Save',
+        cancelScanBtn: 'Cancel / Rescan'
       },
       fr: {
         appTitle: 'Suivi des emplacements des bons de travail',
@@ -656,7 +743,11 @@
         alertTestNoUrl: 'Entrez et enregistrez d\u2019abord une URL d\u2019envoi des scans.',
         alertCameraUnavailable: 'La cam\u00e9ra n\u2019est pas disponible sur cet appareil. Utilisez un lecteur de code-barres ou tapez le code.',
         alertInvalidLocation: 'Code d\u2019emplacement invalide. Doit contenir 1 \u00e0 2 chiffres (avec jusqu\u2019\u00e0 2 d\u00e9cimales, ex. 3 ou 9.12) ou NCR.',
-        alertInvalidWorkOrder: 'Le bon de travail doit contenir au moins 5 caract\u00e8res/chiffres (re-scan d\u2019emplacement ignor\u00e9).'
+        alertInvalidWorkOrder: 'Le bon de travail doit contenir au moins 5 caract\u00e8res/chiffres (re-scan d\u2019emplacement ignor\u00e9).',
+        closeCameraBtn: 'Terminer / Fermer',
+        confirmScanTitle: 'Confirmer le bon de travail',
+        confirmSaveBtn: 'Confirmer',
+        cancelScanBtn: 'Annuler'
       }
     };
 
@@ -800,11 +891,8 @@
       const lookupPage = document.getElementById('lookupPage');
       const settingsPage = document.getElementById('settingsPage');
 
-      if (activePage !== 'scan' && cameraActive && html5QrCode) {
-        try { await html5QrCode.stop(); } catch (e) {}
-        cameraActive = false;
-        document.getElementById('cameraWrapper').classList.add('hidden');
-        document.getElementById('cameraToggleBtn').textContent = t('useCameraBtn');
+      if (activePage !== 'scan' && cameraActive) {
+        await stopCamera();
       }
 
       landingPage.classList.add('hidden');
@@ -1107,6 +1195,12 @@
 
       batchBadge.textContent = `${batchCount} ${t('scannedSuffix')}`;
 
+      const camStepLabel = document.getElementById('camOverlayStepLabel');
+      const camLocText = document.getElementById('camOverlayLocText');
+      const camChangeBtn = document.getElementById('camChangeLocBtn');
+      const camBatchPill = document.getElementById('camBatchPill');
+      if (camBatchPill) camBatchPill.textContent = `${batchCount} ${t('scannedSuffix')}`;
+
       if (!currentLocation) {
         step1Card.className = 'rounded-xl p-4 border-2 border-amber-500 bg-white transition-all shadow-sm';
         step2Card.className = 'rounded-xl p-4 border-2 border-[#c6ddf5] bg-white/75 opacity-65 transition-all shadow-sm';
@@ -1114,6 +1208,13 @@
         locDisplay.className = 'text-2xl font-mono font-bold text-[#6c8cb0] truncate';
         changeBtn.classList.add('hidden');
         step2Prompt.textContent = t('scanLocationFirst');
+
+        if (camStepLabel) {
+          camStepLabel.textContent = t('step1Label');
+          camStepLabel.className = 'text-xs font-bold uppercase tracking-wider text-amber-400';
+        }
+        if (camLocText) camLocText.textContent = t('scanLocationPrompt');
+        if (camChangeBtn) camChangeBtn.classList.add('hidden');
       } else {
         step1Card.className = 'rounded-xl p-4 border-2 border-[#c6ddf5] bg-white transition-all shadow-sm';
         step2Card.className = 'rounded-xl p-4 border-2 border-emerald-500 bg-white transition-all shadow-sm';
@@ -1121,6 +1222,13 @@
         locDisplay.className = 'text-xl sm:text-2xl font-bold text-amber-600 break-words';
         changeBtn.classList.remove('hidden');
         step2Prompt.textContent = t('readyScanWo');
+
+        if (camStepLabel) {
+          camStepLabel.textContent = t('step2Label');
+          camStepLabel.className = 'text-xs font-bold uppercase tracking-wider text-emerald-400';
+        }
+        if (camLocText) camLocText.textContent = formatLocationLabel(currentLocation);
+        if (camChangeBtn) camChangeBtn.classList.remove('hidden');
       }
     }
 
@@ -1159,52 +1267,38 @@
       return clean.length >= 5;
     }
 
-    async function processScan(code, source = 'manual') {
-      const cleanCode = String(code || '').trim();
-      if (!cleanCode) return;
+    let pendingWoCandidate = null;
 
-      const now = Date.now();
-      // Ignore rapid duplicate reads of the exact same code (extended window for camera)
-      const dupWindow = source === 'camera' ? 2500 : 1200;
-      if (cleanCode === lastScanCode && now - lastScanTime < dupWindow) return;
+    function promptWorkOrderConfirmation(woCode) {
+      pendingWoCandidate = woCode;
+      document.getElementById('confirmWoCode').textContent = woCode;
+      document.getElementById('confirmWoLoc').textContent = formatLocationLabel(currentLocation);
+      document.getElementById('woConfirmModal').classList.remove('hidden');
+      playTone('location');
+      setTimeout(() => {
+        const btn = document.getElementById('confirmScanSaveBtn');
+        if (btn) btn.focus();
+      }, 30);
+    }
 
-      if (!currentLocation) {
-        if (!isValidLocationCode(cleanCode)) {
-          lastScanCode = cleanCode;
-          lastScanTime = now;
-          playTone('error');
-          flashScreen('flash-red');
-          showAlert(t('alertInvalidLocation'));
-          return;
-        }
-        hideAlert();
-        lastScanCode = cleanCode;
-        lastScanTime = now;
-        currentLocation = /^NCR$/i.test(cleanCode) ? 'NCR' : cleanCode;
-        batchCount = 0;
-        playTone('location');
-        flashScreen('flash-amber');
-        updateStepUI();
-        return;
-      }
+    function cancelPendingWoScan() {
+      pendingWoCandidate = null;
+      document.getElementById('woConfirmModal').classList.add('hidden');
+      lastScanCode = '';
+      lastScanTime = Date.now();
+    }
 
-      // Step 2: Expecting a Work Order (>= 5 characters/digits)
-      if (!isValidWorkOrderCode(cleanCode)) {
-        // Silently ignore if camera immediately re-reads the active location barcode
-        if (cleanCode.toUpperCase() === currentLocation.toUpperCase()) return;
-        lastScanCode = cleanCode;
-        lastScanTime = now;
-        playTone('error');
-        flashScreen('flash-red');
-        showAlert(t('alertInvalidWorkOrder'));
-        return;
-      }
+    async function confirmPendingWoScan() {
+      if (!pendingWoCandidate) return;
+      const confirmedCode = pendingWoCandidate;
+      pendingWoCandidate = null;
+      document.getElementById('woConfirmModal').classList.add('hidden');
+      lastScanCode = confirmedCode;
+      lastScanTime = Date.now();
+      await commitWorkOrderScan(confirmedCode);
+    }
 
-      hideAlert();
-      lastScanCode = cleanCode;
-      lastScanTime = now;
-      code = cleanCode;
-
+    async function commitWorkOrderScan(code) {
       const nowDate = new Date();
       const timestamp = formatMontrealTimestamp(nowDate);
       const record = {
@@ -1232,6 +1326,56 @@
       if (record.synced && readWebhookUrl) {
         await fetchSharePointList(false);
       }
+    }
+
+    async function processScan(code, source = 'manual') {
+      // Pause background camera reads while awaiting user confirmation
+      if (pendingWoCandidate) return;
+
+      const cleanCode = String(code || '').trim();
+      if (!cleanCode) return;
+
+      const now = Date.now();
+      const dupWindow = source === 'camera' ? 2500 : 1200;
+      if (cleanCode === lastScanCode && now - lastScanTime < dupWindow) return;
+
+      if (!currentLocation) {
+        if (!isValidLocationCode(cleanCode)) {
+          lastScanCode = cleanCode;
+          lastScanTime = now;
+          playTone('error');
+          flashScreen('flash-red');
+          showAlert(t('alertInvalidLocation'));
+          return;
+        }
+        hideAlert();
+        lastScanCode = cleanCode;
+        lastScanTime = now;
+        currentLocation = /^NCR$/i.test(cleanCode) ? 'NCR' : cleanCode;
+        batchCount = 0;
+        playTone('location');
+        flashScreen('flash-amber');
+        updateStepUI();
+        return;
+      }
+
+      // Step 2: Expecting a Work Order (>= 5 characters/digits)
+      if (!isValidWorkOrderCode(cleanCode)) {
+        if (cleanCode.toUpperCase() === currentLocation.toUpperCase()) return;
+        lastScanCode = cleanCode;
+        lastScanTime = now;
+        playTone('error');
+        flashScreen('flash-red');
+        showAlert(t('alertInvalidWorkOrder'));
+        return;
+      }
+
+      hideAlert();
+      lastScanCode = cleanCode;
+      lastScanTime = now;
+
+      // Require manual confirmation for work order scans
+      promptWorkOrderConfirmation(cleanCode);
     }
 
     function getAuthoritativeRecords() {
@@ -1764,31 +1908,53 @@
       URL.revokeObjectURL(url);
     }
 
-    async function toggleCamera() {
-      const wrapper = document.getElementById('cameraWrapper');
+    async function stopCamera() {
+      pendingWoCandidate = null;
+      document.getElementById('woConfirmModal').classList.add('hidden');
+      const overlay = document.getElementById('cameraOverlay');
       const btn = document.getElementById('cameraToggleBtn');
+      if (html5QrCode && cameraActive) {
+        try { await html5QrCode.stop(); } catch (e) {}
+      }
+      cameraActive = false;
+      overlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      if (btn) btn.textContent = t('useCameraBtn');
+    }
 
-      if (cameraActive && html5QrCode) {
-        await html5QrCode.stop();
-        cameraActive = false;
-        wrapper.classList.add('hidden');
-        btn.textContent = t('useCameraBtn');
+    async function toggleCamera() {
+      if (cameraActive) {
+        await stopCamera();
         return;
       }
 
-      wrapper.classList.remove('hidden');
+      const overlay = document.getElementById('cameraOverlay');
+      const btn = document.getElementById('cameraToggleBtn');
+
+      updateStepUI();
+      overlay.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
       btn.textContent = t('stopCameraBtn');
+
       html5QrCode = new Html5Qrcode('reader');
       try {
         await html5QrCode.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 250, height: 150 } },
+          {
+            fps: 10,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+              const width = Math.min(Math.floor(viewfinderWidth * 0.8), 360);
+              const height = Math.min(Math.floor(viewfinderHeight * 0.35), 200);
+              return { width: Math.max(200, width), height: Math.max(120, height) };
+            }
+          },
           (decodedText) => processScan(decodedText, 'camera')
         );
         cameraActive = true;
       } catch (err) {
         showAlert(t('alertCameraUnavailable'));
-        wrapper.classList.add('hidden');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
         btn.textContent = t('useCameraBtn');
       }
     }
