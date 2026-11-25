@@ -1,18 +1,22 @@
+JSON
 {
-  "name": "WO-Tracker-Scanner",
-  "short_name": "App",
+  "name": "Work Order Location Tracker",
+  "short_name": "WO Tracker",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "background_color": "#eef5fc",
+  "theme_color": "#00488f",
   "icons": [
     {
-      "src": "apexlogo128.ico",
+      "src": "./apexlogo128.ico",
       "sizes": "128x128",
-      "type": "image/ico"
+      "type": "image/x-icon"
     },
     {
-      "src": "apexlogo512.ico",
+      "src": "./apexlogo512.ico",
       "sizes": "512x512",
-      "type": "image/ico"
+      "type": "image/x-icon"
     }
   ]
 }
